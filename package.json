@@ -1,0 +1,12 @@
+{
+  "name": "oc-he-bus",
+  "version": "1.0.0",
+  "private": true,
+  "description": "就業判定支援ツール — 健診CSVから就業判定を自動生成",
+  "scripts": {
+    "build": "bash scripts/build.sh"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3"
+  }
+}
