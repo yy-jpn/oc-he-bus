@@ -1,0 +1,5 @@
+test/
+定期健康診断結果_サンプル10名.csv
+node_modules/
+dist/
+.claude/
