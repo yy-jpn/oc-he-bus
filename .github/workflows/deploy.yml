@@ -24,12 +24,12 @@ jobs:
           node-version: 20
           cache: npm
 
-      - run: npm ci
-      - run: bash scripts/build.sh
+      - run: cd apps/hantei-app && npm ci
+      - run: cd apps/hantei-app && bash scripts/build.sh
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: apps/hantei-app/dist
 
   deploy:
     needs: build
