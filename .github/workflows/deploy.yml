@@ -23,6 +23,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: apps/hantei-app/package-lock.json
 
       - run: cd apps/hantei-app && npm ci
       - run: cd apps/hantei-app && bash scripts/build.sh
