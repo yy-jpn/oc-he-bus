@@ -1,0 +1,127 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { TRIGGER_TYPES } from "@/types/phase";
+import { createCase } from "@/lib/actions/cases";
+
+type Employee = { id: string; name: string; department: string | null };
+
+function getEmployeeLabel(employees: Employee[], id: string): string {
+  const emp = employees.find((e) => e.id === id);
+  if (!emp) return "";
+  return emp.name + (emp.department ? ` (${emp.department})` : "");
+}
+
+export function TriggerForm({ employees }: { employees: Employee[] }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [employeeId, setEmployeeId] = useState<string>("");
+  const [triggerType, setTriggerType] = useState<string>("");
+  const router = useRouter();
+
+  async function handleSubmit(formData: FormData) {
+    setLoading(true);
+    setError(null);
+    try {
+      const caseId = await createCase(formData);
+      router.push(`/cases/${caseId}`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "エラーが発生しました");
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>新規ケース作成</CardTitle>
+        <CardDescription>
+          予兆トリガーを登録してケースを作成します
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form action={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="employee_id">対象従業員</Label>
+            <Select name="employee_id" value={employeeId} onValueChange={(v) => setEmployeeId(v ?? "")}>
+              <SelectTrigger id="employee_id">
+                <SelectValue placeholder="従業員を選択">
+                  {employeeId ? getEmployeeLabel(employees, employeeId) : undefined}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {employees.map((emp) => (
+                  <SelectItem key={emp.id} value={emp.id}>
+                    {emp.name}
+                    {emp.department ? ` (${emp.department})` : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="trigger_type">トリガー種別</Label>
+            <Select name="trigger_type" value={triggerType} onValueChange={(v) => setTriggerType(v ?? "")}>
+              <SelectTrigger id="trigger_type">
+                <SelectValue placeholder="種別を選択">
+                  {triggerType ? TRIGGER_TYPES[triggerType as keyof typeof TRIGGER_TYPES] : undefined}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(TRIGGER_TYPES).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="trigger_detail">詳細</Label>
+            <Textarea
+              id="trigger_detail"
+              name="trigger_detail"
+              placeholder="トリガーの詳細を入力してください"
+              rows={3}
+            />
+          </div>
+
+          {error && <p className="text-sm text-destructive">{error}</p>}
+
+          <div className="flex gap-3">
+            <Button type="submit" disabled={loading}>
+              {loading ? "作成中..." : "ケースを作成"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.back()}
+            >
+              キャンセル
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}

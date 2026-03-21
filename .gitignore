@@ -3,3 +3,7 @@ test/
 node_modules/
 dist/
 .claude/
+.next/
+.env.local
+.env*.local
+.vercel
