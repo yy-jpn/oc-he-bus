@@ -128,6 +128,8 @@ tailwind.config = { theme: { extend: { colors: { primary: '#1e40af' } } } }
         <div><label class="block text-xs text-gray-500 mb-1">TG (mg/dL)</label><input type="number" id="f-tg" class="w-full border rounded px-3 py-2 text-sm" placeholder="150"></div>
         <div><label class="block text-xs text-gray-500 mb-1">空腹時血糖 (mg/dL)</label><input type="number" id="f-fbg" class="w-full border rounded px-3 py-2 text-sm" placeholder="100"></div>
         <div><label class="block text-xs text-gray-500 mb-1">HbA1c (%)</label><input type="number" id="f-hba1c" step="0.1" class="w-full border rounded px-3 py-2 text-sm" placeholder="5.5"></div>
+        <div><label class="block text-xs text-gray-500 mb-1">血清Cre (mg/dL)</label><input type="number" id="f-cre" step="0.01" class="w-full border rounded px-3 py-2 text-sm" placeholder="0.80"></div>
+        <div><label class="block text-xs text-gray-500 mb-1">eGFR (mL/min/1.73m²)</label><input type="number" id="f-egfr" step="0.1" class="w-full border rounded px-3 py-2 text-sm" placeholder="自動計算可"></div>
       </div>
     </div>
 
@@ -229,6 +231,9 @@ const DEFAULT_THRESHOLDS = {
   ldl:      { label: 'LDL-c', value: 200, unit: 'mg/dL以上', type: 'number' },
   tg:       { label: 'TG', value: 500, unit: 'mg/dL以上', type: 'number' },
   fbg:      { label: '空腹時血糖', value: 200, unit: 'mg/dL以上', type: 'number' },
+  cre:      { label: '血清Cre', value: 2.0, unit: 'mg/dL以上', type: 'number' },
+  egfr_over40:  { label: 'eGFR（40歳以上）', value: 45, unit: '以下', type: 'number' },
+  egfr_under40: { label: 'eGFR（40歳未満）', value: 60, unit: '以下', type: 'number' },
   vision:   { label: '視力（矯正）', value: '', unit: '未満', type: 'number_optional' },
   urine_protein: { label: '尿蛋白', value: '1+', type: 'select', options: [
     { v: 'off', l: '判定しない' }, { v: '+-', l: '±以上' },
@@ -340,7 +345,7 @@ function getFormData() {
     hb: g('f-hb'), rbc: g('f-rbc'),
     ast: g('f-ast'), alt: g('f-alt'), ggt: g('f-ggt'),
     ldl: g('f-ldl'), hdl: g('f-hdl'), tg: g('f-tg'),
-    fbg: g('f-fbg'), hba1c: g('f-hba1c'),
+    fbg: g('f-fbg'), hba1c: g('f-hba1c'), cre: g('f-cre'), egfr: g('f-egfr'),
     urineSugar: s('f-urine-sugar'), urineProtein: s('f-urine-protein'),
     xray: s('f-xray'), ecg: s('f-ecg'), ecgNote: s('f-ecg-note'),
     symptoms: s('f-symptoms'),
@@ -469,6 +474,8 @@ function buildHeaderMap(headers) {
     tg: /TG|中性脂肪|トリグリセリド/i,
     fbg: /空腹時血糖|血糖|FBG|FBS|glucose/i,
     hba1c: /HbA1c|A1c|ヘモグロビンA1c/i,
+    cre: /血清Cre|(?<![尿])Cre|(?<![尿])クレアチニン|serum.*creatinine|creatinine(?!.*urine)/i,
+    egfr: /eGFR|GFR/i,
     urineSugar: /尿糖/i,
     urineProtein: /尿蛋白|尿タンパク/i,
     xray: /X線|レントゲン|胸部/i,
@@ -528,11 +535,20 @@ function mapCSVRow(headerMap, cols) {
     hb: num('hb'), rbc: num('rbc'),
     ast: num('ast'), alt: num('alt'), ggt: num('ggt'),
     ldl: num('ldl'), hdl: num('hdl'), tg: num('tg'),
-    fbg: num('fbg'), hba1c: num('hba1c'),
+    fbg: num('fbg'), hba1c: num('hba1c'), cre: num('cre'), egfr: num('egfr'),
     urineSugar: normalizeQual(get('urineSugar')), urineProtein: normalizeQual(get('urineProtein')),
     xray: normalizeSelect(get('xray')), ecg: normalizeSelect(get('ecg')), ecgNote: normalizeSelect(get('ecg')) !== 'normal' && normalizeSelect(get('ecg')) !== 'observation' ? get('ecg') : '',
     symptoms: get('symptoms'),
   };
+}
+
+// ============================================================
+// eGFR自動計算（日本人向けGFR推算式）
+// ============================================================
+function calcEGFR(cre, age, sex) {
+  if (cre == null || age == null || cre <= 0) return null;
+  const base = 194 * Math.pow(cre, -1.094) * Math.pow(age, -0.287);
+  return sex === 'female' ? +(base * 0.739).toFixed(1) : +base.toFixed(1);
 }
 
 // ============================================================
@@ -611,6 +627,23 @@ function judgePerson(p) {
   if (p.fbg !== null && p.fbg >= th.fbg.value) {
     findings.push({ severity: 'danger', item: '空腹時血糖', value: `${p.fbg} mg/dL`, note: '著明高値' });
     types.add(1); types.add(2); measures.push('就業制限を検討'); measures.push('速やかな受診勧奨（糖尿病の精査・治療）');
+  }
+
+  // 腎機能（血清Cre / eGFR）
+  if (p.cre !== null) {
+    if (p.cre >= th.cre.value) {
+      findings.push({ severity: 'danger', item: '血清Cre', value: `${p.cre} mg/dL`, note: '高値' });
+      types.add(1); types.add(3); measures.push('受診勧奨（腎機能障害の精査）');
+    }
+    const egfr = p.egfr !== null ? p.egfr : calcEGFR(p.cre, p.age, p.sex);
+    if (egfr !== null) {
+      const ageOver40 = p.age == null || p.age >= 40;
+      const egfrTh = ageOver40 ? th.egfr_over40.value : th.egfr_under40.value;
+      if (egfr <= egfrTh) {
+        findings.push({ severity: 'danger', item: 'eGFR', value: `${egfr} mL/min/1.73m²`, note: `低値（${ageOver40 ? '40歳以上' : '40歳未満'}基準${egfrTh}以下）` });
+        types.add(1); types.add(3); measures.push('受診勧奨（腎機能障害の精査）');
+      }
+    }
   }
 
   // 視力
