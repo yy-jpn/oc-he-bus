@@ -1,0 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body { font-family: 'Noto Sans JP', sans-serif; }
+input[type="number"] { -moz-appearance: textfield; }
+input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; }
+@media print { .no-print { display: none !important; } .print-only { display: block !important; } }
+.print-only { display: none; }
+.tab-active { border-bottom: 3px solid #1e40af; color: #1e40af; font-weight: 700; }
+.drop-zone { border: 2px dashed #cbd5e1; transition: all 0.2s; }
+.drop-zone.dragover { border-color: #1e40af; background: #eff6ff; }
+.ocr-filled { background-color: #fef3c7 !important; border-color: #f59e0b !important; }

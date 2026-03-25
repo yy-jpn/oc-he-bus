@@ -2,11 +2,22 @@
   "name": "oc-he-bus",
   "version": "1.0.0",
   "private": true,
-  "description": "就業判定支援ツール — 健診CSVから就業判定を自動生成",
+  "type": "module",
+  "description": "就業判定支援ツール — 健診CSV/画像/PDFから就業判定を自動生成",
   "scripts": {
-    "build": "bash scripts/build.sh"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0",
+    "onnxruntime-web": "^1.20.0",
+    "pdfjs-dist": "^4.9.0"
   },
   "devDependencies": {
-    "tailwindcss": "^3"
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3",
+    "vite": "^6.3.0"
   }
 }
