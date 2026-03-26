@@ -41,7 +41,7 @@ export default async function CaseDetailPage({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <CaseActions caseId={id} />
+          <CaseActions caseId={id} currentPhase={caseData.current_phase} />
           <Link href="/dashboard" className={buttonVariants({ variant: "outline" })}>
             ダッシュボードに戻る
           </Link>

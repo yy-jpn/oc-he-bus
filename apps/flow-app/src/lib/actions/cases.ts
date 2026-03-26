@@ -9,7 +9,7 @@ export async function getCases(): Promise<CaseWithEmployee[]> {
   const { data, error } = await supabase
     .from("cases")
     .select("*, employees(name, department)")
-    .not("current_phase", "in", '("resolved_without_leave","closed","phase0_monitoring")')
+    .not("current_phase", "in", '("resolved_without_leave","closed","follow_up_completed")')
     .order("updated_at", { ascending: false });
 
   if (error) throw error;
@@ -21,7 +21,7 @@ export async function getCaseSummary(): Promise<Record<string, number>> {
   const { data, error } = await supabase
     .from("cases")
     .select("current_phase")
-    .not("current_phase", "in", '("resolved_without_leave","closed","phase0_monitoring")');
+    .not("current_phase", "in", '("resolved_without_leave","closed","follow_up_completed")');
 
   if (error) throw error;
 
@@ -143,7 +143,7 @@ export async function deleteCase(caseId: string): Promise<void> {
   await supabase.from("case_events").delete().eq("case_id", caseId);
   await supabase.from("interviews").delete().eq("case_id", caseId);
 
-  // Delete leaves and their contact_reminders
+  // Delete leaves and their related records
   const { data: leaves } = await supabase
     .from("leaves")
     .select("id")
@@ -152,6 +152,22 @@ export async function deleteCase(caseId: string): Promise<void> {
   if (leaves) {
     for (const leave of leaves) {
       await supabase.from("contact_reminders").delete().eq("leave_id", leave.id);
+      await supabase.from("return_preparations").delete().eq("leave_id", leave.id);
+      await supabase.from("return_decisions").delete().eq("leave_id", leave.id);
+
+      // Delete returns and their related records
+      const { data: returns } = await supabase
+        .from("returns")
+        .select("id")
+        .eq("leave_id", leave.id);
+
+      if (returns) {
+        for (const ret of returns) {
+          await supabase.from("gradual_schedule_steps").delete().eq("return_id", ret.id);
+          await supabase.from("relapse_prevention_plans").delete().eq("return_id", ret.id);
+        }
+        await supabase.from("returns").delete().eq("leave_id", leave.id);
+      }
     }
     await supabase.from("leaves").delete().eq("case_id", caseId);
   }

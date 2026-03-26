@@ -22,6 +22,7 @@ export function getPhaseColor(phase: string): string {
     case "phase5b_gradual_return":
       return "bg-teal-100 text-teal-800";
     case "resolved_without_leave":
+    case "follow_up_completed":
     case "closed":
       return "bg-gray-100 text-gray-800";
     default:

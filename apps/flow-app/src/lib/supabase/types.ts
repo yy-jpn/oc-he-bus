@@ -349,6 +349,257 @@ export type Database = {
           },
         ];
       };
+      return_preparations: {
+        Row: {
+          id: string;
+          leave_id: string | null;
+          started_at: string | null;
+          rework_enrolled: boolean;
+          rework_facility_name: string | null;
+          rework_status: string | null;
+          checklist_l1_return_intention: boolean;
+          checklist_l2_doctor_clearance: boolean;
+          checklist_l3_self_care: boolean;
+          checklist_l4_communication: boolean;
+          checklist_l5_work_performance: boolean;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          leave_id?: string | null;
+          started_at?: string | null;
+          rework_enrolled?: boolean;
+          rework_facility_name?: string | null;
+          rework_status?: string | null;
+          checklist_l1_return_intention?: boolean;
+          checklist_l2_doctor_clearance?: boolean;
+          checklist_l3_self_care?: boolean;
+          checklist_l4_communication?: boolean;
+          checklist_l5_work_performance?: boolean;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          leave_id?: string | null;
+          started_at?: string | null;
+          rework_enrolled?: boolean;
+          rework_facility_name?: string | null;
+          rework_status?: string | null;
+          checklist_l1_return_intention?: boolean;
+          checklist_l2_doctor_clearance?: boolean;
+          checklist_l3_self_care?: boolean;
+          checklist_l4_communication?: boolean;
+          checklist_l5_work_performance?: boolean;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "return_preparations_leave_id_fkey";
+            columns: ["leave_id"];
+            isOneToOne: false;
+            referencedRelation: "leaves";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      return_decisions: {
+        Row: {
+          id: string;
+          leave_id: string | null;
+          decided_at: string | null;
+          decision: string | null;
+          l1_return_intention: boolean;
+          l1_intention_expressed_at: string | null;
+          l1_intention_confirmed_by: string | null;
+          l2_doctor_clearance: boolean;
+          l2_symptom_stable: boolean;
+          l2_episode_recall_tolerance: boolean;
+          l2_clearance_received_at: string | null;
+          l3_life_rhythm_stable: boolean;
+          l3_medication_self_managed: boolean;
+          l3_grooming_adequate: boolean;
+          l3_daily_outing_possible: boolean;
+          l3_eating_adequate: boolean;
+          l4_family_friends_ok: boolean;
+          l4_strangers_ok: boolean;
+          l4_rework_staff_ok: boolean | null;
+          l4_hr_interview_ok: boolean;
+          l5_attendance_stable: boolean;
+          l5_task_performance_ok: boolean;
+          l5_concentration_adequate: boolean;
+          l5_commute_training_ok: boolean;
+          l5_rework_completion: boolean | null;
+          regional_ohc_consulted: boolean;
+          regional_ohc_opinion: string | null;
+          decided_by: string | null;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          leave_id?: string | null;
+          decided_at?: string | null;
+          decision?: string | null;
+          [key: string]: unknown;
+        };
+        Update: {
+          id?: string;
+          leave_id?: string | null;
+          decided_at?: string | null;
+          decision?: string | null;
+          [key: string]: unknown;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "return_decisions_leave_id_fkey";
+            columns: ["leave_id"];
+            isOneToOne: false;
+            referencedRelation: "leaves";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      returns: {
+        Row: {
+          id: string;
+          leave_id: string | null;
+          return_type: string | null;
+          return_date: string;
+          department: string | null;
+          position: string | null;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          leave_id?: string | null;
+          return_type?: string | null;
+          return_date: string;
+          department?: string | null;
+          position?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          leave_id?: string | null;
+          return_type?: string | null;
+          return_date?: string;
+          department?: string | null;
+          position?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "returns_leave_id_fkey";
+            columns: ["leave_id"];
+            isOneToOne: false;
+            referencedRelation: "leaves";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      gradual_schedule_steps: {
+        Row: {
+          id: string;
+          return_id: string | null;
+          step_number: number;
+          start_date: string;
+          end_date: string;
+          work_hours_per_day: number | null;
+          work_days_per_week: number | null;
+          duty_adjustments: string | null;
+          review_date: string | null;
+          status: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          return_id?: string | null;
+          step_number: number;
+          start_date: string;
+          end_date: string;
+          work_hours_per_day?: number | null;
+          work_days_per_week?: number | null;
+          duty_adjustments?: string | null;
+          review_date?: string | null;
+          status?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          return_id?: string | null;
+          step_number?: number;
+          start_date?: string;
+          end_date?: string;
+          work_hours_per_day?: number | null;
+          work_days_per_week?: number | null;
+          duty_adjustments?: string | null;
+          review_date?: string | null;
+          status?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "gradual_schedule_steps_return_id_fkey";
+            columns: ["return_id"];
+            isOneToOne: false;
+            referencedRelation: "returns";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      relapse_prevention_plans: {
+        Row: {
+          id: string;
+          return_id: string | null;
+          workplace_adjustments: string[];
+          identified_stressors: string[];
+          countermeasures: string[];
+          monitoring_items: string[];
+          monitoring_frequency: string | null;
+          monitoring_duration_months: number | null;
+          next_review_date: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          return_id?: string | null;
+          workplace_adjustments?: string[];
+          identified_stressors?: string[];
+          countermeasures?: string[];
+          monitoring_items?: string[];
+          monitoring_frequency?: string | null;
+          monitoring_duration_months?: number | null;
+          next_review_date?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          return_id?: string | null;
+          workplace_adjustments?: string[];
+          identified_stressors?: string[];
+          countermeasures?: string[];
+          monitoring_items?: string[];
+          monitoring_frequency?: string | null;
+          monitoring_duration_months?: number | null;
+          next_review_date?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "relapse_prevention_plans_return_id_fkey";
+            columns: ["return_id"];
+            isOneToOne: false;
+            referencedRelation: "returns";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

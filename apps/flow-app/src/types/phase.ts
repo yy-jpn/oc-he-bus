@@ -8,6 +8,7 @@ export const PHASES = {
   phase5a_full_return: "復職済（通常勤務）",
   phase5b_gradual_return: "段階的復職中",
   resolved_without_leave: "解決（休職なし）",
+  follow_up_completed: "フォロー終了",
   closed: "完了",
 } as const;
 

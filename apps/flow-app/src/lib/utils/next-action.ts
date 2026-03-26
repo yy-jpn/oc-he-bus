@@ -33,6 +33,12 @@ export function getNextActions(caseData: CaseWithEmployee): NextAction[] {
         description: "必要に応じて追加の面談を行ってください",
         href: `${basePath}/interview`,
       });
+      actions.push({
+        priority: "low",
+        title: "フォローを終了する",
+        description: "状態が安定した場合、ケース詳細画面からフォローを終了できます",
+        href: basePath,
+      });
       break;
     case "phase1_leave_start":
       actions.push({
@@ -64,6 +70,22 @@ export function getNextActions(caseData: CaseWithEmployee): NextAction[] {
         title: "復職判定を行う",
         description: "5層ピラミッドチェックリストに基づいて判定してください",
         href: `${basePath}/decision`,
+      });
+      break;
+    case "phase5a_full_return":
+      actions.push({
+        priority: "high",
+        title: "復職を記録する",
+        description: "復職日と復職先を記録してケースを完了してください",
+        href: `${basePath}/return`,
+      });
+      break;
+    case "phase5b_gradual_return":
+      actions.push({
+        priority: "high",
+        title: "段階的復職を管理する",
+        description: "段階的復職スケジュールと再発防止計画を管理してください",
+        href: `${basePath}/gradual-return`,
       });
       break;
     default:

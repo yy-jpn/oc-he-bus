@@ -58,14 +58,14 @@ export async function createInterview(
   } else if (outcome === "continue_monitoring") {
     await supabase
       .from("cases")
-      .update({ current_phase: "resolved_without_leave" })
+      .update({ current_phase: "phase0_monitoring" })
       .eq("id", caseId);
 
     await supabase.from("case_events").insert({
       case_id: caseId,
       event_type: "phase_change",
       event_date: new Date().toISOString(),
-      description: "フェーズ変更: 解決（休職なし）へ自動アーカイブ",
+      description: "フェーズ変更: 経過観察へ",
       created_by: user.id,
     });
   }
