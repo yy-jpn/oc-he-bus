@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -23,6 +24,7 @@ import { TRIGGER_TYPES } from "@/types/phase";
 import { createCase } from "@/lib/actions/cases";
 
 type Employee = { id: string; name: string; department: string | null };
+type Mode = "existing" | "new";
 
 function getEmployeeLabel(employees: Employee[], id: string): string {
   const emp = employees.find((e) => e.id === id);
@@ -33,6 +35,7 @@ function getEmployeeLabel(employees: Employee[], id: string): string {
 export function TriggerForm({ employees }: { employees: Employee[] }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mode, setMode] = useState<Mode>("existing");
   const [employeeId, setEmployeeId] = useState<string>("");
   const [triggerType, setTriggerType] = useState<string>("");
   const router = useRouter();
@@ -59,24 +62,69 @@ export function TriggerForm({ employees }: { employees: Employee[] }) {
       </CardHeader>
       <CardContent>
         <form action={handleSubmit} className="space-y-4">
+          <input type="hidden" name="mode" value={mode} />
+
           <div className="space-y-2">
-            <Label htmlFor="employee_id">対象従業員</Label>
-            <Select name="employee_id" value={employeeId} onValueChange={(v) => setEmployeeId(v ?? "")}>
-              <SelectTrigger id="employee_id">
-                <SelectValue placeholder="従業員を選択">
-                  {employeeId ? getEmployeeLabel(employees, employeeId) : undefined}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {employees.map((emp) => (
-                  <SelectItem key={emp.id} value={emp.id}>
-                    {emp.name}
-                    {emp.department ? ` (${emp.department})` : ""}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>対象従業員</Label>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant={mode === "existing" ? "default" : "outline"}
+                onClick={() => setMode("existing")}
+              >
+                既存から選択
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={mode === "new" ? "default" : "outline"}
+                onClick={() => setMode("new")}
+              >
+                新規入力
+              </Button>
+            </div>
           </div>
+
+          {mode === "existing" ? (
+            <div className="space-y-2">
+              <Select name="employee_id" value={employeeId} onValueChange={(v) => setEmployeeId(v ?? "")}>
+                <SelectTrigger id="employee_id">
+                  <SelectValue placeholder="従業員を選択">
+                    {employeeId ? getEmployeeLabel(employees, employeeId) : undefined}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {employees.map((emp) => (
+                    <SelectItem key={emp.id} value={emp.id}>
+                      {emp.name}
+                      {emp.department ? ` (${emp.department})` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="space-y-1">
+                <Label htmlFor="employee_name">氏名</Label>
+                <Input
+                  id="employee_name"
+                  name="employee_name"
+                  placeholder="例: 山田 太郎"
+                  required
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="employee_department">部署（任意）</Label>
+                <Input
+                  id="employee_department"
+                  name="employee_department"
+                  placeholder="例: 営業部"
+                />
+              </div>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="trigger_type">トリガー種別</Label>

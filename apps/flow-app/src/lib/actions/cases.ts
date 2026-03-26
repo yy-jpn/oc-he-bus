@@ -62,9 +62,33 @@ export async function createCase(formData: FormData): Promise<string> {
 
   if (!profile?.company_id) throw new Error("Company not found");
 
-  const employeeId = formData.get("employee_id") as string;
+  const mode = formData.get("mode") as string;
   const triggerType = formData.get("trigger_type") as string;
   const triggerDetail = formData.get("trigger_detail") as string;
+
+  let employeeId: string;
+
+  if (mode === "new") {
+    const employeeName = formData.get("employee_name") as string;
+    const employeeDepartment = formData.get("employee_department") as string | null;
+    if (!employeeName?.trim()) throw new Error("従業員名を入力してください");
+
+    const { data: newEmployee, error: empError } = await supabase
+      .from("employees")
+      .insert({
+        name: employeeName.trim(),
+        department: employeeDepartment?.trim() || null,
+        company_id: profile.company_id,
+      })
+      .select("id")
+      .single();
+
+    if (empError || !newEmployee) throw empError ?? new Error("従業員の作成に失敗しました");
+    employeeId = newEmployee.id;
+  } else {
+    employeeId = formData.get("employee_id") as string;
+    if (!employeeId) throw new Error("従業員を選択してください");
+  }
 
   const { data: caseData, error } = await supabase
     .from("cases")
