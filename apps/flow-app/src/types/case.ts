@@ -17,3 +17,10 @@ export type CaseDetail = Case & {
   interviews: Interview[];
   leaves: Leave[];
 };
+
+export type CaseCandidate =
+  Database["public"]["Tables"]["case_candidates"]["Row"];
+
+export type CaseCandidateWithEmployee = CaseCandidate & {
+  employees: Pick<Employee, "name" | "department"> | null;
+};

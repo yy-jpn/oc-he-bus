@@ -22,7 +22,7 @@ export default async function NewCasePage() {
 
   const { data: employees } = await supabase
     .from("employees")
-    .select("id, name, department")
+    .select("id, name, department, employee_code")
     .eq("company_id", profile.company_id!)
     .order("name");
 

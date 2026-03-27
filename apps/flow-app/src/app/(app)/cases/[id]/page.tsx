@@ -48,7 +48,7 @@ export default async function CaseDetailPage({
         </div>
       </div>
 
-      <NextActionGuide actions={actions} />
+      <NextActionGuide actions={actions} caseId={id} />
 
       <Separator />
 

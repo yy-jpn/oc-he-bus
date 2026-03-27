@@ -65,6 +65,9 @@ export async function createCase(formData: FormData): Promise<string> {
   const mode = formData.get("mode") as string;
   const triggerType = formData.get("trigger_type") as string;
   const triggerDetail = formData.get("trigger_detail") as string;
+  const employeeCode = (formData.get("employee_code") as string)?.trim();
+
+  if (!employeeCode) throw new Error("社員番号を入力してください");
 
   let employeeId: string;
 
@@ -78,6 +81,7 @@ export async function createCase(formData: FormData): Promise<string> {
       .insert({
         name: employeeName.trim(),
         department: employeeDepartment?.trim() || null,
+        employee_code: employeeCode,
         company_id: profile.company_id,
       })
       .select("id")
@@ -88,6 +92,12 @@ export async function createCase(formData: FormData): Promise<string> {
   } else {
     employeeId = formData.get("employee_id") as string;
     if (!employeeId) throw new Error("従業員を選択してください");
+
+    // Update employee_code if changed
+    await supabase
+      .from("employees")
+      .update({ employee_code: employeeCode })
+      .eq("id", employeeId);
   }
 
   const { data: caseData, error } = await supabase

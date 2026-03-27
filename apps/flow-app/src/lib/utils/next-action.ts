@@ -5,6 +5,7 @@ export type NextAction = {
   title: string;
   description: string;
   href: string;
+  actionType?: "follow_up_complete";
 };
 
 export function getNextActions(caseData: CaseWithEmployee): NextAction[] {
@@ -36,8 +37,9 @@ export function getNextActions(caseData: CaseWithEmployee): NextAction[] {
       actions.push({
         priority: "low",
         title: "フォローを終了する",
-        description: "状態が安定した場合、ケース詳細画面からフォローを終了できます",
+        description: "状態が安定した場合、フォローを終了できます",
         href: basePath,
+        actionType: "follow_up_complete",
       });
       break;
     case "phase1_leave_start":

@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
+import { SidebarProvider } from "@/components/layout/sidebar-context";
+import { getPendingCandidateCount } from "@/lib/actions/candidates";
 
 export const dynamic = "force-dynamic";
 
@@ -27,14 +29,17 @@ export default async function AppLayout({
     .single();
 
   const userName = profile?.name || user.email || "";
+  const pendingCount = await getPendingCandidateCount();
 
   return (
-    <div className="flex h-full">
-      <Sidebar />
-      <div className="flex flex-1 flex-col min-w-0">
-        <Header userName={userName} />
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+    <SidebarProvider>
+      <div className="flex h-full">
+        <Sidebar pendingCandidateCount={pendingCount} />
+        <div className="flex flex-1 flex-col min-w-0">
+          <Header userName={userName} />
+          <main className="flex-1 overflow-auto p-6">{children}</main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }

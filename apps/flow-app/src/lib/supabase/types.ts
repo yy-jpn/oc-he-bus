@@ -74,6 +74,7 @@ export type Database = {
           department: string | null;
           position: string | null;
           manager_id: string | null;
+          employee_code: string | null;
           created_at: string;
         };
         Insert: {
@@ -84,6 +85,7 @@ export type Database = {
           department?: string | null;
           position?: string | null;
           manager_id?: string | null;
+          employee_code?: string | null;
           created_at?: string;
         };
         Update: {
@@ -94,6 +96,7 @@ export type Database = {
           department?: string | null;
           position?: string | null;
           manager_id?: string | null;
+          employee_code?: string | null;
           created_at?: string;
         };
         Relationships: [
@@ -596,6 +599,232 @@ export type Database = {
             columns: ["return_id"];
             isOneToOne: false;
             referencedRelation: "returns";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      hr_data_imports: {
+        Row: {
+          id: string;
+          company_id: string;
+          source_type: string;
+          data_type: string;
+          imported_at: string;
+          record_count: number;
+          status: string;
+          metadata: Json | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          source_type?: string;
+          data_type: string;
+          imported_at?: string;
+          record_count?: number;
+          status?: string;
+          metadata?: Json | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          source_type?: string;
+          data_type?: string;
+          imported_at?: string;
+          record_count?: number;
+          status?: string;
+          metadata?: Json | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "hr_data_imports_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      hr_data_records: {
+        Row: {
+          id: string;
+          import_id: string;
+          company_id: string;
+          employee_code: string;
+          employee_id: string | null;
+          data_type: string;
+          period_start: string | null;
+          period_end: string | null;
+          data: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          import_id: string;
+          company_id: string;
+          employee_code: string;
+          employee_id?: string | null;
+          data_type: string;
+          period_start?: string | null;
+          period_end?: string | null;
+          data: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          import_id?: string;
+          company_id?: string;
+          employee_code?: string;
+          employee_id?: string | null;
+          data_type?: string;
+          period_start?: string | null;
+          period_end?: string | null;
+          data?: Json;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "hr_data_records_import_id_fkey";
+            columns: ["import_id"];
+            isOneToOne: false;
+            referencedRelation: "hr_data_imports";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "hr_data_records_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "hr_data_records_employee_id_fkey";
+            columns: ["employee_id"];
+            isOneToOne: false;
+            referencedRelation: "employees";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      case_candidates: {
+        Row: {
+          id: string;
+          company_id: string;
+          employee_id: string;
+          trigger_type: string;
+          trigger_detail: string | null;
+          threshold_rule: string;
+          source_record_ids: string[] | null;
+          status: string;
+          reviewed_by: string | null;
+          reviewed_at: string | null;
+          created_case_id: string | null;
+          detected_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          employee_id: string;
+          trigger_type: string;
+          trigger_detail?: string | null;
+          threshold_rule: string;
+          source_record_ids?: string[] | null;
+          status?: string;
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+          created_case_id?: string | null;
+          detected_at?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          employee_id?: string;
+          trigger_type?: string;
+          trigger_detail?: string | null;
+          threshold_rule?: string;
+          source_record_ids?: string[] | null;
+          status?: string;
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+          created_case_id?: string | null;
+          detected_at?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "case_candidates_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "case_candidates_employee_id_fkey";
+            columns: ["employee_id"];
+            isOneToOne: false;
+            referencedRelation: "employees";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "case_candidates_reviewed_by_fkey";
+            columns: ["reviewed_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "case_candidates_created_case_id_fkey";
+            columns: ["created_case_id"];
+            isOneToOne: false;
+            referencedRelation: "cases";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      threshold_settings: {
+        Row: {
+          id: string;
+          company_id: string;
+          trigger_type: string;
+          rule_key: string;
+          parameters: Json;
+          enabled: boolean;
+          auto_approve: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          trigger_type: string;
+          rule_key: string;
+          parameters?: Json;
+          enabled?: boolean;
+          auto_approve?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          trigger_type?: string;
+          rule_key?: string;
+          parameters?: Json;
+          enabled?: boolean;
+          auto_approve?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "threshold_settings_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
             referencedColumns: ["id"];
           },
         ];
