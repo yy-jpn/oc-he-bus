@@ -607,6 +607,7 @@ export type Database = {
         Row: {
           id: string;
           company_id: string;
+          connection_id: string | null;
           source_type: string;
           data_type: string;
           imported_at: string;
@@ -618,6 +619,7 @@ export type Database = {
         Insert: {
           id?: string;
           company_id: string;
+          connection_id?: string | null;
           source_type?: string;
           data_type: string;
           imported_at?: string;
@@ -629,6 +631,7 @@ export type Database = {
         Update: {
           id?: string;
           company_id?: string;
+          connection_id?: string | null;
           source_type?: string;
           data_type?: string;
           imported_at?: string;
@@ -781,6 +784,204 @@ export type Database = {
             columns: ["created_case_id"];
             isOneToOne: false;
             referencedRelation: "cases";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      hr_connections: {
+        Row: {
+          id: string;
+          company_id: string;
+          adapter_type: string;
+          display_name: string;
+          auth_type: string;
+          credentials_encrypted: string | null;
+          oauth_state: Json | null;
+          config: Json;
+          sync_data_types: string[];
+          schedule: string;
+          schedule_time: string | null;
+          schedule_day_of_week: number | null;
+          is_active: boolean;
+          last_synced_at: string | null;
+          last_sync_status: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          adapter_type: string;
+          display_name: string;
+          auth_type: string;
+          credentials_encrypted?: string | null;
+          oauth_state?: Json | null;
+          config?: Json;
+          sync_data_types?: string[];
+          schedule?: string;
+          schedule_time?: string | null;
+          schedule_day_of_week?: number | null;
+          is_active?: boolean;
+          last_synced_at?: string | null;
+          last_sync_status?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          adapter_type?: string;
+          display_name?: string;
+          auth_type?: string;
+          credentials_encrypted?: string | null;
+          oauth_state?: Json | null;
+          config?: Json;
+          sync_data_types?: string[];
+          schedule?: string;
+          schedule_time?: string | null;
+          schedule_day_of_week?: number | null;
+          is_active?: boolean;
+          last_synced_at?: string | null;
+          last_sync_status?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "hr_connections_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      hr_sync_logs: {
+        Row: {
+          id: string;
+          connection_id: string;
+          company_id: string;
+          status: string;
+          started_at: string;
+          completed_at: string | null;
+          data_types_requested: string[] | null;
+          data_types_succeeded: string[] | null;
+          data_types_failed: string[] | null;
+          records_fetched: number;
+          candidates_created: number;
+          cases_created: number;
+          cases_updated: number;
+          error_message: string | null;
+          error_details: Json | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          connection_id: string;
+          company_id: string;
+          status?: string;
+          started_at?: string;
+          completed_at?: string | null;
+          data_types_requested?: string[] | null;
+          data_types_succeeded?: string[] | null;
+          data_types_failed?: string[] | null;
+          records_fetched?: number;
+          candidates_created?: number;
+          cases_created?: number;
+          cases_updated?: number;
+          error_message?: string | null;
+          error_details?: Json | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          connection_id?: string;
+          company_id?: string;
+          status?: string;
+          started_at?: string;
+          completed_at?: string | null;
+          data_types_requested?: string[] | null;
+          data_types_succeeded?: string[] | null;
+          data_types_failed?: string[] | null;
+          records_fetched?: number;
+          candidates_created?: number;
+          cases_created?: number;
+          cases_updated?: number;
+          error_message?: string | null;
+          error_details?: Json | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "hr_sync_logs_connection_id_fkey";
+            columns: ["connection_id"];
+            isOneToOne: false;
+            referencedRelation: "hr_connections";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "hr_sync_logs_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      hr_sync_alerts: {
+        Row: {
+          id: string;
+          connection_id: string;
+          company_id: string;
+          sync_log_id: string | null;
+          alert_type: string;
+          message: string;
+          resolved: boolean;
+          resolved_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          connection_id: string;
+          company_id: string;
+          sync_log_id?: string | null;
+          alert_type: string;
+          message: string;
+          resolved?: boolean;
+          resolved_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          connection_id?: string;
+          company_id?: string;
+          sync_log_id?: string | null;
+          alert_type?: string;
+          message?: string;
+          resolved?: boolean;
+          resolved_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "hr_sync_alerts_connection_id_fkey";
+            columns: ["connection_id"];
+            isOneToOne: false;
+            referencedRelation: "hr_connections";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "hr_sync_alerts_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "hr_sync_alerts_sync_log_id_fkey";
+            columns: ["sync_log_id"];
+            isOneToOne: false;
+            referencedRelation: "hr_sync_logs";
             referencedColumns: ["id"];
           },
         ];

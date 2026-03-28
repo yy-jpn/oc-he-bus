@@ -15,8 +15,10 @@ interface NavItem {
 
 export function Sidebar({
   pendingCandidateCount = 0,
+  unresolvedAlertCount = 0,
 }: {
   pendingCandidateCount?: number;
+  unresolvedAlertCount?: number;
 }) {
   const pathname = usePathname();
   const { isOpen, close } = useSidebar();
@@ -35,6 +37,13 @@ export function Sidebar({
       label: "設定",
       icon: "⚙️",
       children: [
+        {
+          href: "/settings/connections",
+          label: "API連携",
+          icon: "🔗",
+          badge:
+            unresolvedAlertCount > 0 ? unresolvedAlertCount : undefined,
+        },
         { href: "/settings/thresholds", label: "閾値設定", icon: "📏" },
         { href: "/settings/import", label: "データ取込", icon: "📥" },
       ],
@@ -84,6 +93,11 @@ export function Sidebar({
                     >
                       <span>{child.icon}</span>
                       {child.label}
+                      {child.badge != null && child.badge > 0 && (
+                        <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
+                          {child.badge}
+                        </span>
+                      )}
                     </Link>
                   ))}
                 </div>

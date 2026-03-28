@@ -4,6 +4,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { SidebarProvider } from "@/components/layout/sidebar-context";
 import { getPendingCandidateCount } from "@/lib/actions/candidates";
+import { getUnresolvedAlertCount } from "@/lib/actions/connections";
 
 export const dynamic = "force-dynamic";
 
@@ -30,11 +31,12 @@ export default async function AppLayout({
 
   const userName = profile?.name || user.email || "";
   const pendingCount = await getPendingCandidateCount();
+  const alertCount = await getUnresolvedAlertCount();
 
   return (
     <SidebarProvider>
       <div className="flex h-full">
-        <Sidebar pendingCandidateCount={pendingCount} />
+        <Sidebar pendingCandidateCount={pendingCount} unresolvedAlertCount={alertCount} />
         <div className="flex flex-1 flex-col min-w-0">
           <Header userName={userName} />
           <main className="flex-1 overflow-auto p-6">{children}</main>
