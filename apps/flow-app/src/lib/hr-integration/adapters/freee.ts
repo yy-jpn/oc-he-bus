@@ -5,7 +5,9 @@ import type {
   StressCheckRecord,
   HealthCheckRecord,
   AttendanceRecord,
+  AttendanceConfig,
 } from "../types";
+import { DEFAULT_ATTENDANCE_CONFIG } from "../types";
 import { HrApiClient } from "../api-client";
 
 // freee人事労務 API レスポンス型定義
@@ -62,8 +64,13 @@ export class FreeeHrAdapter implements HrDataAdapter {
   readonly sourceType = "freee";
   private client: HrApiClient;
   private companyId: string;
+  private globalConfig: AttendanceConfig;
 
-  constructor(accessToken: string, companyId: string) {
+  constructor(
+    accessToken: string,
+    companyId: string,
+    config?: Record<string, string>
+  ) {
     this.companyId = companyId;
     this.client = new HrApiClient({
       baseUrl: "https://api.freee.co.jp",
@@ -71,6 +78,14 @@ export class FreeeHrAdapter implements HrDataAdapter {
         Authorization: `Bearer ${accessToken}`,
       },
     });
+    this.globalConfig = {
+      scheduledStartTime:
+        config?.scheduled_start_time || DEFAULT_ATTENDANCE_CONFIG.scheduledStartTime,
+      scheduledWorkMinutes:
+        Number(config?.scheduled_work_minutes) || DEFAULT_ATTENDANCE_CONFIG.scheduledWorkMinutes,
+      flexTimeEnabled:
+        config?.flex_time_enabled === "true",
+    };
   }
 
   /**
@@ -153,7 +168,8 @@ export class FreeeHrAdapter implements HrDataAdapter {
 
   async fetchAttendanceData(
     _companyId: string,
-    period: DateRange
+    period: DateRange,
+    employeeConfigs?: Map<string, AttendanceConfig>
   ): Promise<AttendanceRecord[]> {
     const empCodeMap = await this.getEmployeeCodeMap();
     const results: AttendanceRecord[] = [];
@@ -175,8 +191,9 @@ export class FreeeHrAdapter implements HrDataAdapter {
           }
         );
 
+        const personalConfig = employeeConfigs?.get(empCode);
         for (const record of response.employee_work_records) {
-          const events = this.extractAttendanceEvents(record);
+          const events = this.extractAttendanceEvents(record, personalConfig);
           for (const eventType of events) {
             results.push({
               employeeCode: empCode,
@@ -216,10 +233,13 @@ export class FreeeHrAdapter implements HrDataAdapter {
 
   /**
    * 勤怠レコードから勤怠イベントを抽出する。
+   * 個人設定 > 全体設定 > デフォルト値 の優先順位で判定基準を決定。
    */
   private extractAttendanceEvents(
-    record: FreeeWorkRecord
+    record: FreeeWorkRecord,
+    personalConfig?: AttendanceConfig
   ): AttendanceRecord["eventType"][] {
+    const config = personalConfig ?? this.globalConfig;
     const events: AttendanceRecord["eventType"][] = [];
 
     // 欠勤（有給以外）
@@ -227,30 +247,39 @@ export class FreeeHrAdapter implements HrDataAdapter {
       events.push("non_pto_absence");
     }
 
-    // 当日有給
+    // 有給欠勤（当日申請かは未確認 → pto_absence として保存）
     if (record.is_paid_holiday) {
-      events.push("same_day_pto");
+      events.push("pto_absence");
     }
 
-    // 遅刻: clock_in_at が存在し、day_pattern が normal_day の場合に
-    // 出勤時刻から判定（簡易判定: 9:30以降を遅刻とする）
+    // フレックスタイム制 → 遅刻・早退を判定しない
+    if (config.flexTimeEnabled) {
+      return events;
+    }
+
+    // 遅刻判定: 設定された始業時刻 + 30分 を基準
     if (record.clock_in_at && record.day_pattern === "normal_day") {
+      const [startH, startM] = config.scheduledStartTime.split(":").map(Number);
+      const totalLateMinutes = startH * 60 + startM + 30;
+      const lateHour = Math.floor(totalLateMinutes / 60);
+      const lateMin = totalLateMinutes % 60;
+
       const clockIn = new Date(record.clock_in_at);
-      const hours = clockIn.getHours();
-      const minutes = clockIn.getMinutes();
-      if (hours > 9 || (hours === 9 && minutes >= 30)) {
+      const clockInH = clockIn.getHours();
+      const clockInM = clockIn.getMinutes();
+      if (clockInH > lateHour || (clockInH === lateHour && clockInM >= lateMin)) {
         events.push("tardiness");
       }
     }
 
-    // 早退: total_normal_work_mins が所定労働時間より大幅に少ない場合
-    // （簡易判定: 6時間未満で早退扱い、ただし出勤している場合のみ）
+    // 早退判定: 所定労働時間の75%未満
+    const earlyThreshold = config.scheduledWorkMinutes * 0.75;
     if (
       record.clock_in_at &&
       record.clock_out_at &&
       !record.is_absence &&
       record.day_pattern === "normal_day" &&
-      (record.total_normal_work_mins ?? 0) < 360
+      (record.total_normal_work_mins ?? 0) < earlyThreshold
     ) {
       events.push("early_leave");
     }

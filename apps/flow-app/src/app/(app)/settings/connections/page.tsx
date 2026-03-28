@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { getConnections } from "@/lib/actions/connections";
 import { ConnectionList } from "@/components/settings/connection-list";
+import { DataCoverageBanner } from "@/components/settings/data-coverage-banner";
+import { getAdapterDefinition } from "@/lib/hr-integration/adapters/registry";
 
 export default async function ConnectionsPage() {
   const supabase = await createClient();
@@ -23,6 +25,17 @@ export default async function ConnectionsPage() {
 
   const connections = await getConnections();
 
+  // 全接続のカバー済みデータ種別を集約
+  const coveredDataTypes = new Set<string>();
+  for (const conn of connections) {
+    const adapterDef = getAdapterDefinition(conn.adapterType);
+    if (adapterDef) {
+      for (const dt of adapterDef.supportedDataTypes) {
+        coveredDataTypes.add(dt);
+      }
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -31,6 +44,9 @@ export default async function ConnectionsPage() {
           外部HRサービスと連携して、データを自動で取り込みます
         </p>
       </div>
+      {connections.length > 0 && (
+        <DataCoverageBanner coveredDataTypes={Array.from(coveredDataTypes)} />
+      )}
       <ConnectionList connections={connections} />
     </div>
   );

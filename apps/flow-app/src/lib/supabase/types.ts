@@ -75,6 +75,7 @@ export type Database = {
           position: string | null;
           manager_id: string | null;
           employee_code: string | null;
+          attendance_config: Json | null;
           created_at: string;
         };
         Insert: {
@@ -86,6 +87,7 @@ export type Database = {
           position?: string | null;
           manager_id?: string | null;
           employee_code?: string | null;
+          attendance_config?: Json | null;
           created_at?: string;
         };
         Update: {
@@ -97,6 +99,7 @@ export type Database = {
           position?: string | null;
           manager_id?: string | null;
           employee_code?: string | null;
+          attendance_config?: Json | null;
           created_at?: string;
         };
         Relationships: [

@@ -10,12 +10,30 @@ export function checkAttendanceMultipleEvents(
 ): CandidateProposal[] {
   const eventCount = params.event_count ?? 2;
   const periodWeeks = params.period_weeks ?? 4;
+  const enabledTypes = params.enabled_event_types ?? [
+    "tardiness",
+    "early_leave",
+    "non_pto_absence",
+    "same_day_pto",
+  ];
   const periodMs = periodWeeks * 7 * 24 * 60 * 60 * 1000;
   const proposals: CandidateProposal[] = [];
 
+  // pto_absence のうち confirmed なものだけ same_day_pto に変換し、
+  // 未確認の pto_absence は閾値判定から除外
+  const processedRecords = records
+    .map((r) => {
+      if (r.eventType === "pto_absence" && r.sameDayConfirmed) {
+        return { ...r, eventType: "same_day_pto" as const };
+      }
+      return r;
+    })
+    .filter((r) => r.eventType !== "pto_absence")
+    .filter((r) => enabledTypes.includes(r.eventType));
+
   // Group by employee
   const byEmployee = new Map<string, AttendanceRecord[]>();
-  for (const record of records) {
+  for (const record of processedRecords) {
     const existing = byEmployee.get(record.employeeCode) ?? [];
     existing.push(record);
     byEmployee.set(record.employeeCode, existing);
@@ -43,6 +61,7 @@ export function checkAttendanceMultipleEvents(
           early_leave: "早退",
           non_pto_absence: "無届欠勤",
           same_day_pto: "当日有休",
+          pto_absence: "有給欠勤",
         };
 
         const details = eventsInWindow

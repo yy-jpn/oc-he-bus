@@ -18,7 +18,12 @@ import {
   deleteConnection,
   type ConnectionListItem,
 } from "@/lib/actions/connections";
-import { getDataTypeLabel } from "@/lib/hr-integration/adapters/registry";
+import {
+  getDataTypeLabel,
+  getAdapterDefinition,
+} from "@/lib/hr-integration/adapters/registry";
+
+const ALL_DATA_TYPES = ["overtime", "attendance", "health_check", "stress_check"];
 
 const ADAPTER_ICONS: Record<string, string> = {
   smarthr: "🏢",
@@ -194,15 +199,38 @@ export function ConnectionList({
               </div>
             </CardHeader>
             <CardContent className="pb-3">
-              <div className="flex flex-wrap gap-2 mb-3">
-                {conn.syncDataTypes.map((dt) => (
-                  <span
-                    key={dt}
-                    className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium"
-                  >
-                    {getDataTypeLabel(dt)}
-                  </span>
-                ))}
+              <div className="space-y-1 mb-3">
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-xs text-muted-foreground mr-1">取得可能:</span>
+                  {conn.syncDataTypes.map((dt) => (
+                    <span
+                      key={dt}
+                      className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:border-green-900 dark:bg-green-950/20 dark:text-green-400"
+                    >
+                      {getDataTypeLabel(dt)}
+                    </span>
+                  ))}
+                </div>
+                {(() => {
+                  const adapterDef = getAdapterDefinition(conn.adapterType);
+                  const unsupported = ALL_DATA_TYPES.filter(
+                    (dt) => !adapterDef?.supportedDataTypes.includes(dt)
+                  );
+                  if (unsupported.length === 0) return null;
+                  return (
+                    <div className="flex flex-wrap gap-2">
+                      <span className="text-xs text-muted-foreground mr-1">取得不可:</span>
+                      {unsupported.map((dt) => (
+                        <span
+                          key={dt}
+                          className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2.5 py-0.5 text-xs font-medium text-gray-400 dark:border-gray-700 dark:bg-gray-900/20 dark:text-gray-500"
+                        >
+                          {getDataTypeLabel(dt)}
+                        </span>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
 
               {conn.lastSyncedAt && (

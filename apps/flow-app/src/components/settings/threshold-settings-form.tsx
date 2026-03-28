@@ -53,8 +53,34 @@ export function ThresholdSettingsForm({
   >(() => {
     const initial: Record<string, Record<string, number>> = {};
     for (const s of settings) {
-      const params = s.parameters as Record<string, number>;
-      initial[s.id] = { ...params };
+      const params = s.parameters as Record<string, unknown>;
+      const numParams: Record<string, number> = {};
+      for (const [k, v] of Object.entries(params)) {
+        if (typeof v === "number") numParams[k] = v;
+      }
+      initial[s.id] = numParams;
+    }
+    return initial;
+  });
+
+  const ALL_EVENT_TYPES = [
+    { key: "tardiness", label: "遅刻" },
+    { key: "early_leave", label: "早退" },
+    { key: "non_pto_absence", label: "無届欠勤" },
+    { key: "same_day_pto", label: "当日有休" },
+  ] as const;
+
+  const [editingEventTypes, setEditingEventTypes] = useState<
+    Record<string, string[]>
+  >(() => {
+    const initial: Record<string, string[]> = {};
+    for (const s of settings) {
+      const params = s.parameters as Record<string, unknown>;
+      if (Array.isArray(params.enabled_event_types)) {
+        initial[s.id] = params.enabled_event_types as string[];
+      } else {
+        initial[s.id] = ALL_EVENT_TYPES.map((t) => t.key);
+      }
     }
     return initial;
   });
@@ -83,15 +109,29 @@ export function ThresholdSettingsForm({
     });
   }
 
-  function handleSaveParams(id: string) {
+  function handleSaveParams(id: string, ruleKey?: string) {
     setError(null);
     startTransition(async () => {
       try {
-        await updateThresholdSetting(id, editingParams[id] ?? {});
+        const params: Record<string, unknown> = { ...(editingParams[id] ?? {}) };
+        if (ruleKey === "attendance_multiple_events") {
+          params.enabled_event_types = editingEventTypes[id] ?? ALL_EVENT_TYPES.map((t) => t.key);
+        }
+        await updateThresholdSetting(id, params);
         router.refresh();
       } catch (e) {
         setError(e instanceof Error ? e.message : "保存に失敗しました");
       }
+    });
+  }
+
+  function handleToggleEventType(settingId: string, eventType: string) {
+    setEditingEventTypes((prev) => {
+      const current = prev[settingId] ?? ALL_EVENT_TYPES.map((t) => t.key);
+      const next = current.includes(eventType)
+        ? current.filter((t) => t !== eventType)
+        : [...current, eventType];
+      return { ...prev, [settingId]: next };
     });
   }
 
@@ -145,8 +185,8 @@ export function ThresholdSettingsForm({
                 </div>
               </div>
             </CardHeader>
-            {setting.enabled && Object.keys(params).length > 0 && (
-              <CardContent>
+            {setting.enabled && (Object.keys(params).length > 0 || setting.rule_key === "attendance_multiple_events") && (
+              <CardContent className="space-y-4">
                 <div className="flex items-end gap-4">
                   {Object.entries(params).map(([key, value]) => (
                     <div key={key} className="space-y-1">
@@ -162,9 +202,32 @@ export function ThresholdSettingsForm({
                       />
                     </div>
                   ))}
+                </div>
+
+                {setting.rule_key === "attendance_multiple_events" && (
+                  <div className="space-y-2">
+                    <Label>カウント対象イベント</Label>
+                    <div className="flex flex-wrap gap-4">
+                      {ALL_EVENT_TYPES.map((et) => (
+                        <label key={et.key} className="flex items-center gap-2 text-sm">
+                          <Checkbox
+                            checked={(editingEventTypes[setting.id] ?? []).includes(et.key)}
+                            onCheckedChange={() =>
+                              handleToggleEventType(setting.id, et.key)
+                            }
+                            disabled={isPending}
+                          />
+                          {et.label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div>
                   <Button
                     size="sm"
-                    onClick={() => handleSaveParams(setting.id)}
+                    onClick={() => handleSaveParams(setting.id, setting.rule_key)}
                     disabled={isPending}
                   >
                     {isPending ? "保存中..." : "保存"}

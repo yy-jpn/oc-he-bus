@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { getCandidates } from "@/lib/actions/candidates";
 import { CandidateList } from "@/components/candidates/candidate-list";
+import { PtoConfirmationBanner } from "@/components/candidates/pto-confirmation";
+import { getPendingPtoAbsences } from "@/lib/actions/pto-confirmation";
 
 export default async function CandidatesPage() {
   const supabase = await createClient();
@@ -21,7 +23,10 @@ export default async function CandidatesPage() {
     redirect("/dashboard");
   }
 
-  const candidates = await getCandidates();
+  const [candidates, ptoRecords] = await Promise.all([
+    getCandidates(),
+    getPendingPtoAbsences(),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -31,6 +36,7 @@ export default async function CandidatesPage() {
           自動検知されたケース候補の承認・却下を行います
         </p>
       </div>
+      <PtoConfirmationBanner records={ptoRecords} />
       <CandidateList candidates={candidates} />
     </div>
   );

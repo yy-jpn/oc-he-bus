@@ -405,6 +405,16 @@ export function ConnectionForm({
             ))}
 
             {/* 認証フィールド */}
+            {selectedAdapter === "freee" && (
+              <div className="rounded-md border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950/20">
+                <p className="text-sm text-amber-700 dark:text-amber-400">
+                  ℹ freee人事労務からは時間外労働データと勤怠データを取得できます。
+                  健康診断の就業判定結果・ストレスチェック結果はfreeeでは管理されていないため、
+                  SmartHR連携またはCSVインポートをご利用ください。
+                </p>
+              </div>
+            )}
+
             {adapter.authType === "oauth2" ? (
               <div className="rounded-md border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950/20">
                 <p className="text-sm text-blue-700 dark:text-blue-400">

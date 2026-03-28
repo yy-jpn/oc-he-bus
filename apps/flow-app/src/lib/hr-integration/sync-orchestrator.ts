@@ -363,7 +363,12 @@ async function fetchDataByType(
         employeeCode: r.employeeCode,
         periodStart: r.eventDate,
         periodEnd: r.eventDate,
-        data: { event_date: r.eventDate, event_type: r.eventType },
+        data: {
+          event_date: r.eventDate,
+          event_type: r.eventType,
+          same_day_confirmed: r.eventType === "pto_absence" ? false : undefined,
+          confirmation_source: undefined,
+        },
       }));
     }
     default:

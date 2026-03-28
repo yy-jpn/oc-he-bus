@@ -138,7 +138,10 @@ export async function processImportedRecords(
               | "tardiness"
               | "early_leave"
               | "non_pto_absence"
-              | "same_day_pto",
+              | "same_day_pto"
+              | "pto_absence",
+            sameDayConfirmed: d.same_day_confirmed as boolean | undefined,
+            confirmationSource: d.confirmation_source as "manual" | "api" | undefined,
           };
         })
       : [];

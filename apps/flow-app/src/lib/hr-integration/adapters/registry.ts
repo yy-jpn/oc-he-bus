@@ -116,12 +116,40 @@ registerAdapter({
         "freee人事労務にログイン後、URLに表示される事業所IDを入力してください",
       required: true,
     },
+    {
+      key: "scheduled_start_time",
+      label: "所定始業時刻",
+      type: "text",
+      placeholder: "09:00",
+      helpText:
+        "遅刻判定の基準時刻（HH:MM形式）。空欄時は09:00",
+      required: false,
+    },
+    {
+      key: "scheduled_work_minutes",
+      label: "所定労働時間（分）",
+      type: "text",
+      placeholder: "480",
+      helpText:
+        "早退判定の基準（分単位）。空欄時は480分（8時間）",
+      required: false,
+    },
+    {
+      key: "flex_time_enabled",
+      label: "フレックスタイム制",
+      type: "text",
+      placeholder: "false",
+      helpText:
+        "trueの場合、全従業員の遅刻・早退を判定しない",
+      required: false,
+    },
   ],
   createAdapter: (credentials, config) => {
     const { FreeeHrAdapter } = require("./freee");
     return new FreeeHrAdapter(
       credentials.access_token,
-      config?.company_id ?? ""
+      config?.company_id ?? "",
+      config
     );
   },
 });

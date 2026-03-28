@@ -24,7 +24,14 @@ export interface HealthCheckRecord {
 export interface AttendanceRecord {
   employeeCode: string;
   eventDate: string;
-  eventType: "tardiness" | "early_leave" | "non_pto_absence" | "same_day_pto";
+  eventType:
+    | "tardiness"
+    | "early_leave"
+    | "non_pto_absence"
+    | "same_day_pto"
+    | "pto_absence";
+  sameDayConfirmed?: boolean;
+  confirmationSource?: "manual" | "api";
 }
 
 export interface CandidateProposal {
@@ -40,7 +47,20 @@ export interface ThresholdParameters {
   consecutive_months?: number;
   event_count?: number;
   period_weeks?: number;
+  enabled_event_types?: string[];
 }
+
+export interface AttendanceConfig {
+  scheduledStartTime: string;    // "09:00" (HH:MM)
+  scheduledWorkMinutes: number;  // 480
+  flexTimeEnabled: boolean;      // false
+}
+
+export const DEFAULT_ATTENDANCE_CONFIG: AttendanceConfig = {
+  scheduledStartTime: "09:00",
+  scheduledWorkMinutes: 480,
+  flexTimeEnabled: false,
+};
 
 export interface ThresholdSetting {
   ruleKey: string;
